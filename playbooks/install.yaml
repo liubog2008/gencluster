@@ -1,0 +1,26 @@
+- name: System check and init
+  hosts: all
+  any_errors_fatal: true
+  tasks:
+  - name: init system
+    import_role:
+      name: system
+
+- name: Install docker
+  hosts: docker
+  any_errors_fatal: true
+  tasks:
+  - name: install docker
+    import_role:
+      name: docker
+
+- name: Install kubernetes
+  hosts: kubernetes
+  any_errors_fatal: true
+  tasks:
+  - name: install masters
+    import_role:
+      name: kubernetes/masters
+  - name: install nodes
+    import_role:
+      name: kubernetes/nodes

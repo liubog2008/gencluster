@@ -1,0 +1,15 @@
+- name: Precheck the input and environment
+  import_tasks: precheck.yaml
+
+- name: Download docker
+  include_tasks: "{{ ansible_distribution | lower }}/download.yaml"
+
+- name: Config docker
+  include_tasks: "{{ ansible_distribution | lower }}/config.yaml"
+
+- name: Start/Restart docker
+  include_tasks: "{{ ansible_distribution | lower }}/start.yaml"
+
+- name: Config docker for custom repo
+  include_tasks: repo.yaml
+  when: docker_custom_repo | length != 0

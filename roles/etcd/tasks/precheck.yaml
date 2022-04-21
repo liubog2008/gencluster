@@ -1,0 +1,5 @@
+- name: Check install path
+
+- name: Check docker installation
+
+- name: Check listen port

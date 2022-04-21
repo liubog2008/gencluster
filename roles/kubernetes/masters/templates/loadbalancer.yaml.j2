@@ -1,0 +1,62 @@
+# TODO(liubog2008): change to use configmap to store config
+apiVersion: v1
+kind: Pod
+metadata:
+  name: keepalived-haproxy
+  namespace: kube-system
+  annotations:
+    scheduler.alpha.kubernetes.io/critical-pod: ''
+spec:
+  hostNetwork: true
+  containers:
+  - name: haproxy
+    image: {{ haproxy_image }}
+    imagePullPolicy: IfNotPresent
+    resources:
+      requests:
+        # Add this because we set resourcequotas and remove limitranges
+        cpu: 10m
+        memory: 10Mi
+    command:
+    - /usr/local/sbin/haproxy
+    - -f
+    - {{ haproxy_config_dir }}/haproxy.cfg
+    - -p
+    - /run/haproxy.pid
+    ports:
+    - containerPort: 80
+      hostPort: 80
+      name: http
+    - containerPort: {{ kube_loadbalancer_port }}
+      hostPort: {{ kube_loadbalancer_port }}
+      name: https
+    volumeMounts:
+    - mountPath: {{ haproxy_config_dir }}/haproxy.cfg
+      name: haproxycfg
+      readOnly: true
+  - name: keepalived
+    image: {{ keepalived_image }}
+    imagePullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 10m
+        memory: 10Mi
+    command:
+    - keepalived
+    - --log-console
+    - --dont-fork
+    - -f
+    - {{ keepalived_config_dir }}/keepalived.conf
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - mountPath: {{ keepalived_config_dir }}
+      name: etckeepalived
+      readOnly: true
+  volumes:
+  - hostPath:
+      path: {{ haproxy_config_dir }}/haproxy.cfg
+    name: haproxycfg
+  - hostPath:
+      path: {{ keepalived_config_dir }}
+    name: etckeepalived

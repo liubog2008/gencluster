@@ -1,0 +1,46 @@
+global
+        log 127.0.0.1    local0
+        maxconn 32768
+        pidfile /run/haproxy.pid
+        stats socket /run/haproxy.stats
+        tune.ssl.default-dh-param 2048
+
+defaults
+        log     global
+        mode    tcp
+        option  tcplog
+        option  dontlognull
+        retries 3
+        timeout connect 50000ms
+        timeout client 600000ms
+        timeout server 600000ms
+        timeout check 600000ms
+        timeout queue 600000ms
+
+frontend frontend-apiserver-https
+        # Haproxy enable SSL
+        bind *:{{ kube_loadbalancer_port }}
+        default_backend backend-apiserver-http
+
+backend backend-apiserver-http
+        balance roundrobin
+        option httpchk GET /healthz
+        # list backend servers, note: we must keep the following mark.
+        ##BACKEND-SERVERS-INSERT-MARK
+{% for host in ansible_play_hosts %}
+        server {{ host }} {{ hostvars[host]['ansible_ssh_host'] }}:{{ kube_apiserver_port }} check check-ssl verify none
+{% endfor %}
+
+listen  admin_stats
+        bind 127.0.0.1:80
+        # bind {{ kube_loadbalancer_ip }}:{{ kube_loadbalancer_port }}
+        log global
+        mode http
+        maxconn 10
+        stats enable
+        #Hide HAPRoxy version, a necessity for any public-facing site
+        stats hide-version
+        stats refresh 30s
+        stats show-node
+        stats realm Haproxy\ Statistics
+        stats uri /haproxy/stats

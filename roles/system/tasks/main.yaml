@@ -1,0 +1,6 @@
+- name: Add custom yum repo file
+  template:
+    src: centos/CentOS-base.repo.j2
+    dest: /etc/yum.repos.d/CentOS-base.repo
+  when: download_url != ""
+

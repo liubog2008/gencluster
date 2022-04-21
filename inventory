@@ -1,0 +1,22 @@
+[all:vars]
+ansible_port=22
+ansible_user=xxx
+
+[masters]
+kube-master-1 ansible_ssh_host=a.b.c.d
+
+[nodes]
+kube-nodes-1 ansible_ssh_host=a.b.c.d
+kube-nodes-2 ansible_ssh_host=a.b.c.d
+
+[docker:children]
+masters
+nodes
+
+[system:children]
+masters
+nodes
+
+[kubernetes:children]
+masters
+nodes

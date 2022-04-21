@@ -1,0 +1,17 @@
+- name: Add docker repo
+  when: docker_custom_repo | length == 0
+  template:
+    src: "centos/CentOS-docker.repo.j2"
+    dest: /etc/yum.repos.d/CentOS-docker.repo
+
+
+- name: Install specific version of docker engine
+  yum:
+    name:
+    - "docker-ce-{{ docker_version }}"
+    - "docker-ce-cli-{{ docker_version }}"
+    disablerepo: "*"
+    enablerepo: "base,docker"
+    state: present
+    update_cache: yes
+

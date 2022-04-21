@@ -1,0 +1,7 @@
+- name: install etcd
+  import_tasks: install.yaml
+  when: g_action == "install"
+
+- name: remove etcd
+  import_tasks: remove.yaml
+  when: g_action == "remove"

@@ -1,0 +1,101 @@
+- name: Change sysctl config
+  sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    sysctl_set: true
+    state: present
+    reload: true
+  with_items: "{{ sysctl_args }}"
+
+- name: Add kernel module ipvs
+  import_tasks: centos/kernel.yaml
+
+- name: Ensure remote config dir exists
+  file:
+    name: /etc/kubeadm
+    state: directory
+
+- name: Ensure certs dir exits
+  file:
+    name: /etc/kubernetes/pki/etcd
+    state: directory
+
+- name: Generate kubeadm config
+  template:
+    src: kubeadm.yaml.j2
+    dest: /etc/kubeadm/kubeadm.yaml
+
+- name: Generate ca
+  shell: kubeadm init phase certs all --config /etc/kubeadm/kubeadm.yaml
+  run_once: true
+  delegate_to: "{{ ansible_play_hosts|first }}"
+
+
+- name: Fetch ca from hosts
+  fetch:
+    src: "{{ item }}"
+    dest: "/tmp"
+  with_items:
+  - "/etc/kubernetes/pki/ca.crt"
+  - "/etc/kubernetes/pki/ca.key"
+  - "/etc/kubernetes/pki/sa.key"
+  - "/etc/kubernetes/pki/sa.pub"
+  - "/etc/kubernetes/pki/front-proxy-ca.crt"
+  - "/etc/kubernetes/pki/front-proxy-ca.key"
+  - "/etc/kubernetes/pki/etcd/ca.crt"
+  - "/etc/kubernetes/pki/etcd/ca.key"
+  delegate_to: "{{ ansible_play_hosts|first }}"
+  run_once: true
+
+- name: Copy ca to hosts
+  copy:
+    src: "/tmp/{{ ansible_play_hosts|first }}/{{ item }}"
+    dest: "{{ item }}"
+  with_items:
+  - "/etc/kubernetes/pki/ca.crt"
+  - "/etc/kubernetes/pki/ca.key"
+  - "/etc/kubernetes/pki/sa.key"
+  - "/etc/kubernetes/pki/sa.pub"
+  - "/etc/kubernetes/pki/front-proxy-ca.crt"
+  - "/etc/kubernetes/pki/front-proxy-ca.key"
+  - "/etc/kubernetes/pki/etcd/ca.crt"
+  - "/etc/kubernetes/pki/etcd/ca.key"
+  when: inventory_hostname != ansible_play_hosts|first
+
+- name: Ensure loadbalancer config dir exists
+  file:
+    name: "{{ item }}"
+    state: directory
+  with_items:
+  - "/etc/kubernetes/manifests"
+  - "/etc/kubernetes/keepalived"
+  - "/etc/kubernetes/haproxy"
+  when: kube_ha
+
+- name: Generate haproxy config
+  template:
+    src: "haproxy.cfg.j2"
+    dest: "{{ haproxy_config_dir }}/haproxy.cfg"
+  when: kube_ha
+
+- name: Generate keepalived config
+  template:
+    src: "keepalived.conf.j2"
+    dest: "{{ keepalived_config_dir }}/keepalived.conf"
+  when: kube_ha
+
+- name: Copy keepalived script
+  copy:
+    src: "{{ item }}"
+    dest: "{{ keepalived_config_dir }}/{{ item }}"
+    mode: '0755'
+  with_items:
+  - "check_haproxy.sh"
+  - "notify.sh"
+  when: kube_ha
+
+- name: Generate loadbalancer manifest
+  template:
+    src: "loadbalancer.yaml.j2"
+    dest: "/etc/kubernetes/manifests/loadbalancer.yaml"
+  when: kube_ha

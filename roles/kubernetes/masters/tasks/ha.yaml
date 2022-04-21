@@ -1,0 +1,32 @@
+- name: Ensure loadbalancer config dir exists
+  file:
+    name: "{{ item }}"
+    state: directory
+  with_items:
+  - "/etc/kubernetes/manifests"
+  - "/etc/kubernetes/keepalived"
+  - "/etc/kubernetes/haproxy"
+
+- name: Generate haproxy config
+  template:
+    src: "haproxy.cfg.j2"
+    dest: "{{ haproxy_config_dir }}/haproxy.cfg"
+
+- name: Generate keepalived config
+  template:
+    src: "keepalived.conf.j2"
+    dest: "{{ keepalived_config_dir }}/keepalived.conf"
+
+- name: Copy keepalived script
+  copy:
+    src: "{{ item }}"
+    dest: "{{ keepalived_config_dir }}/{{ item }}"
+    mode: '0755'
+  with_items:
+  - "check_haproxy.sh"
+  - "notify.sh"
+
+- name: Generate loadbalancer manifest
+  template:
+    src: "loadbalancer.yaml.j2"
+    dest: "/etc/kubernetes/manifests/loadbalancer.yaml"

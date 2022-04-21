@@ -1,0 +1,25 @@
+- name: Start docker service
+  block:
+  - name: Async start docker service
+    systemd:
+      name: docker
+      daemon_reload: true
+      state: started
+      enabled: true
+    async: 60
+    poll: 0
+    register: docker_starter
+
+  - name: Check status of docker start job
+    async_status:
+      jid: "{{ docker_starter.ansible_job_id }}"
+    register: job_result
+    until: job_result.finished
+    retries: 60
+    ignore_errors: true
+
+  - name: Failed to start docker
+    fail:
+      msg: "Can't start docker in {{ inventory_hostname }}"
+    when: not job_result.finished
+

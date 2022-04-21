@@ -1,0 +1,4 @@
+- name: install kubernetes
+  import_tasks: install.yaml
+  when: g_action == "install"
+

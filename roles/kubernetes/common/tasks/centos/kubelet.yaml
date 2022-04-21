@@ -1,0 +1,5 @@
+- name: Enable kubelet service
+  systemd:
+    name: kubelet
+    enabled: true
+    daemon_reload: true

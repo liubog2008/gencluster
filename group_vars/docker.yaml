@@ -1,0 +1,14 @@
+# g_action defines action of role
+# Now support [install, remove]
+g_action: install
+
+# g_docker_version defines version of docker
+g_docker_version: "20.10.7"
+
+g_docker_custom_repo:
+# - name: ""
+#   addr: ""
+#   cert: ""
+#   remote: true
+#   username: ""
+#   password: ""

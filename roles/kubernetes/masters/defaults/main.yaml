@@ -1,0 +1,69 @@
+kube_version: "{{ g_kube_version }}"
+
+kube_ha: "{{ ansible_play_hosts | length != 1 }}"
+
+kube_loadbalancer_ip: "{{ g_kube_loadbalancer_ip | kube_apiserver_addr }}"
+
+kube_loadbalancer_port: "{{ g_kube_loadbalancer_port | kube_apiserver_port }}"
+
+supported_kube_version:
+- "1.14.8"
+- "1.21.1"
+
+kube_image_repo: "k8s.gcr.io"
+
+download_url: "{{ g_kube_centos_repo }}"
+
+kube_apiserver_addr: "{{ ansible_ssh_host }}"
+
+kube_apiserver_port: "6443"
+
+kube_dns_domain: "cluster.local"
+
+kube_pod_cidr: "10.0.0.0/22"
+
+kube_svc_cidr: "10.0.100.0/24"
+
+kube_etcd_current_name: "{{ inventory_hostname }}"
+
+kube_etcd_current_host: "{{ ansible_ssh_host }}"
+
+kube_etcd_names: "{{ ansible_play_hosts }}"
+
+kube_etcd_hosts: "{{ ansible_play_hosts | map('extract', hostvars, 'ansible_ssh_host') | list }}"
+
+# keepalived_interfaces are interfaces can be used by keepalived which match
+#   the provided ip
+# It should be validated that exact one interface exists
+keepalived_interfaces: "{{ ansible_interfaces | map('regex_replace', '-', '_') | map('extract',  ansible_facts) | rejectattr('ipv4', 'undefined') | selectattr('ipv4.address', 'equalto', ansible_ssh_host) | map(attribute='device') | list }}"
+
+# keepalived_priority defines priority of host
+keepalived_priority: "{{ 100 - (ansible_play_hosts.index(inventory_hostname) | int) * 3 }}"
+
+keepalived_config_dir: "/etc/kubernetes/keepalived"
+
+keepalived_image: "keepalived:v1.3.5"
+
+haproxy_config_dir: "/etc/kubernetes/haproxy"
+
+haproxy_image: "haproxy:1.6.5"
+
+sysctl_args:
+  #- key: net.bridge.bridge-nf-call-iptables
+  #  value: 1
+- key: net.ipv4.ip_forward
+  value: 1
+- key: net.ipv4.ip_nonlocal_bind
+  value: 1
+- key: net.ipv4.conf.all.arp_announce
+  value: 2
+- key: net.ipv4.conf.default.arp_announce
+  value: 2
+- key: net.ipv4.conf.all.arp_ignore
+  value: 1
+- key: net.ipv4.conf.default.arp_ignore
+  value: 1
+- key: net.ipv4.conf.all.arp_filter
+  value: 1
+- key: net.ipv4.conf.default.arp_filter
+  value: 1

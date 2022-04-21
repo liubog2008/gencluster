@@ -1,0 +1,50 @@
+# Script used to check if HAProxy is running
+vrrp_script check_script {
+  script "{{ keepalived_config_dir }}/check_haproxy.sh 2 http://127.0.0.1/haproxy/stats"
+  interval 2 # check every 5 seconds
+  weight 5
+  fall 2 # require 2 fail for KO
+  rise 1 # require 1 successes for OK
+}
+# Virtual interface
+# The priority specifies the order in which the assigned interface to take over in a failover
+vrrp_instance VI_01 {
+  # role is MASTER or BACKUP
+  state {% if inventory_hostname == ansible_play_hosts|first %}MASTER{% else %}BACKUP{% endif %}
+
+  interface {{ keepalived_interfaces | first }}
+
+  track_interface {
+    {{ keepalived_interfaces | first }}
+  }
+
+  unicast_src_ip {{ hostvars[inventory_hostname]['ansible_ssh_host'] }}
+  unicast_peer {
+{% for hostname in ansible_play_hosts %}
+{%- if hostname != inventory_hostname %}
+    {{ hostvars[hostname]['ansible_ssh_host'] }}
+{% endif -%}
+{% endfor %}
+  }
+  garp_master_repeat 5
+  garp_master_refresh 10
+  #相同VRID的属于同一组，根据优先级选举出一个主
+  virtual_router_id 1
+  priority {{ keepalived_priority }}
+  #nopreempt
+  #VRRP心跳包的发送周期，单位为s
+  advert_int 1
+  authentication {
+    auth_type PASS
+    auth_pass helloworld
+  }
+  # The virtual ip address shared between the two loadbalancers
+  virtual_ipaddress {
+    {{ kube_loadbalancer_ip }} dev {{ keepalived_interfaces | first }} label {{ keepalived_interfaces | first }}:vip
+  }
+  track_script {
+    check_script
+  }
+  # don’t include parameters in the notify script, but exclude notify_xxxx
+  notify "{{ keepalived_config_dir }}/notify.sh"
+}

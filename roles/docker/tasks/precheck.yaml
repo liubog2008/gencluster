@@ -1,0 +1,16 @@
+- name: Check docker version
+  assert:
+    that:
+    - "docker_version in supported_docker_version"
+    fail_msg: "{{ docker_version }} is not supported, supported version list: {{ supported_docker_version }}"
+    success_msg: "{{ docker_version }} is supported"
+
+- name: Check docker custom repo
+  assert:
+    that:
+    - "item.name is defined and item.name != ''"
+    - "item.username is not defined or item.username != ''"
+    - "item.password is not defined or item.password != ''"
+    fail_msg: "repo {{ item }} is in invaild format"
+    success_msg: "validate repo {{ item.name }} format success"
+  with_items: "{{ docker_custom_repo }}"

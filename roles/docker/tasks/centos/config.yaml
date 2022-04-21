@@ -1,0 +1,9 @@
+- name: Ensure docker config dir exists
+  file:
+    path: /etc/docker
+    state: directory
+
+- name: Write docker config file
+  template:
+    src: centos/daemon.json.j2
+    dest: /etc/docker/daemon.json

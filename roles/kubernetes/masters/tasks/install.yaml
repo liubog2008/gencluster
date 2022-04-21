@@ -1,0 +1,12 @@
+- name: Precheck the input and environment
+  import_tasks: precheck.yaml
+
+- name: Generate kubeadm config
+  import_tasks: config.yaml
+
+- name: Generate HA component
+  include_tasks: "ha.yaml"
+  when: kube_ha
+
+- name: Kubeadm init
+  shell: kubeadm init --config /etc/kubeadm/kubeadm.yaml

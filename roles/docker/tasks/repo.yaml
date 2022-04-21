@@ -1,0 +1,34 @@
+- name: Ensure certs directories exits
+  file:
+    name: "/etc/docker/certs.d/{{ item.name }}"
+    state: directory
+  with_items: "{{ docker_custom_repo }}"
+
+- name: Download cert file
+  get_url:
+    url: "{{ item.cert }}"
+    dest: "/tmp/{{ item.name }}.crt"
+  when: item.remote
+  with_items: "{{ docker_custom_repo }}"
+  delegate_to: localhost
+  run_once: true
+
+- name: Add certs into directory
+  copy:
+    src: "/tmp/{{ item.name }}.crt"
+    dest: "/etc/docker/certs.d/{{ item.name }}/ca.crt"
+  with_items: "{{ docker_custom_repo }}"
+
+- name: Add mappings to /etc/hosts
+  blockinfile:
+    path: /etc/hosts
+    block: |
+      {{ item.addr }} {{ item.name }}
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.name }}"
+  when: "item.addr is defined and item.addr | ipaddr"
+  with_items: "{{ docker_custom_repo }}"
+
+- name: Docker login
+  shell: "docker login {{ item.name }} -u {{ item.username }} -p {{ item.password }}"
+  when: item.username is defined and item.password is defined
+  with_items: "{{ docker_custom_repo }}"

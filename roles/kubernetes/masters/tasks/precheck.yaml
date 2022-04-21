@@ -1,0 +1,13 @@
+- name: Check kubernetes version
+  assert:
+    that:
+    - "kube_version in supported_kube_version"
+    fail_msg: "{{ kube_version }} is not supported, supported version list: {{ supported_kube_version }}"
+    success_msg: "{{ kube_version }} is supported"
+
+- name: Check interface for keepalived
+  assert:
+    that:
+    - "keepalived_interfaces | length == 1"
+    fail_msg: "interface of ip {{ ansible_ssh_host }} is none or more than one: {{ keepalived_interfaces }}"
+    success_msg: "find {{ keepalived_interfaces | first }} as interface for keepalived"

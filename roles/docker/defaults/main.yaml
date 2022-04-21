@@ -1,0 +1,10 @@
+# docker version defines version of docker
+docker_version: "{{ g_docker_version }}"
+
+
+# supported_docker_version is supported version of docker now
+supported_docker_version:
+- 20.10.7
+
+# docker_custom_repo defines repo config of custom repo
+docker_custom_repo: "{{ g_docker_custom_repo | default([]) }}"

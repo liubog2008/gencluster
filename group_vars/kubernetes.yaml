@@ -1,0 +1,5 @@
+g_kube_version: "1.21.1"
+
+g_kube_centos_repo: ""
+
+g_kube_loadbalancer_ip: ""

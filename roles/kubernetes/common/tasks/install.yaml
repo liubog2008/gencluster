@@ -1,0 +1,5 @@
+- name: Download kubeadm, kubelet and kubectl
+  include_tasks: "{{ ansible_distribution | lower }}/download.yaml"
+
+- name: Enable kubelet service
+  include_tasks: "{{ ansible_distribution | lower }}/kubelet.yaml"

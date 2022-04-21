@@ -1,0 +1,4 @@
+- name: Precheck the environment
+  import_tasks: precheck.yaml
+
+- name: Download etcd
