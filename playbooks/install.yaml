@@ -18,9 +18,22 @@
   hosts: kubernetes
   any_errors_fatal: true
   tasks:
+  - name: install base
+    import_role:
+      name: kubernetes/common
+
+- name: Install kubernetes masters
+  hosts: masters
+  any_errors_fatal: true
+  tasks:
   - name: install masters
     import_role:
       name: kubernetes/masters
+
+- name: Install kubernetes nodes
+  hosts: nodes
+  any_errors_fatal: true
+  tasks:
   - name: install nodes
     import_role:
       name: kubernetes/nodes

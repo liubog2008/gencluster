@@ -4,4 +4,4 @@
   delegate_to: "{{ groups['masters'] | first }}"
 
 - name: Run join command
-  shell: kubeadm_join_cmd.stdout
+  shell: "{{ kubeadm_join_cmd.stdout }}"

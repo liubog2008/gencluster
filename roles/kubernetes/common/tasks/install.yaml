@@ -1,5 +1,15 @@
 - name: Download kubeadm, kubelet and kubectl
-  include_tasks: "{{ ansible_distribution | lower }}/download.yaml"
+  get_url:
+    url: https://storage.googleapis.com/kubernetes-release/release/v{{ kube_version }}/bin/linux/amd64/{{ item }}
+    dest: /usr/bin/{{ item }}
+    mode: '0755'
+  with_items:
+  - kubectl
+  - kubelet
+  - kubeadm
 
 - name: Enable kubelet service
   include_tasks: "{{ ansible_distribution | lower }}/kubelet.yaml"
+
+- name: Config kernel
+  include_tasks: "{{ ansible_distribution | lower }}/kernel.yaml"

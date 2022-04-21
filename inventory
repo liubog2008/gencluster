@@ -1,13 +1,12 @@
 [all:vars]
 ansible_port=22
-ansible_user=xxx
+ansible_user=vagrant
 
 [masters]
-kube-master-1 ansible_ssh_host=a.b.c.d
+kube-master-1 ansible_ssh_host=192.168.50.167
 
 [nodes]
-kube-nodes-1 ansible_ssh_host=a.b.c.d
-kube-nodes-2 ansible_ssh_host=a.b.c.d
+kube-nodes-1 ansible_ssh_host=192.168.50.68
 
 [docker:children]
 masters

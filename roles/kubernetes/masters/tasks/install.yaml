@@ -8,5 +8,25 @@
   include_tasks: "ha.yaml"
   when: kube_ha
 
+- name: Kubeadm reset
+  shell: kubeadm reset -f
+
 - name: Kubeadm init
   shell: kubeadm init --config /etc/kubeadm/kubeadm.yaml
+
+- name: Wait for apiserver started
+  wait_for:
+    port: "{{ kube_apiserver_port }}"
+    delay: 10
+
+- name: Install calico operator
+  shell: kubectl --kubeconfig /etc/kubernetes/admin.conf create -f https://projectcalico.docs.tigera.io/manifests/tigera-operator.yaml
+
+- name: Copy calico file
+  template:
+    src: calico.yaml.j2
+    dest: /etc/kubernetes/calico.yaml
+
+- name: Install calico
+  shell: kubectl --kubeconfig /etc/kubernetes/admin.conf create -f /etc/kubernetes/calico.yaml
+

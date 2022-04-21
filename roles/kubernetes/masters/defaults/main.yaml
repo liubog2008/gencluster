@@ -1,16 +1,16 @@
 kube_version: "{{ g_kube_version }}"
 
-kube_ha: "{{ ansible_play_hosts | length != 1 }}"
+kube_ha: "{{ (ansible_play_hosts | length) != 1 }}"
 
-kube_loadbalancer_ip: "{{ g_kube_loadbalancer_ip | kube_apiserver_addr }}"
+kube_loadbalancer_ip: "{{ kube_apiserver_addr }}"
 
-kube_loadbalancer_port: "{{ g_kube_loadbalancer_port | kube_apiserver_port }}"
+kube_loadbalancer_port: "{{ kube_apiserver_port }}"
 
 supported_kube_version:
 - "1.14.8"
 - "1.21.1"
 
-kube_image_repo: "k8s.gcr.io"
+kube_image_repo: "registry.aliyuncs.com/google_containers"
 
 download_url: "{{ g_kube_centos_repo }}"
 
@@ -48,22 +48,3 @@ haproxy_config_dir: "/etc/kubernetes/haproxy"
 
 haproxy_image: "haproxy:1.6.5"
 
-sysctl_args:
-  #- key: net.bridge.bridge-nf-call-iptables
-  #  value: 1
-- key: net.ipv4.ip_forward
-  value: 1
-- key: net.ipv4.ip_nonlocal_bind
-  value: 1
-- key: net.ipv4.conf.all.arp_announce
-  value: 2
-- key: net.ipv4.conf.default.arp_announce
-  value: 2
-- key: net.ipv4.conf.all.arp_ignore
-  value: 1
-- key: net.ipv4.conf.default.arp_ignore
-  value: 1
-- key: net.ipv4.conf.all.arp_filter
-  value: 1
-- key: net.ipv4.conf.default.arp_filter
-  value: 1

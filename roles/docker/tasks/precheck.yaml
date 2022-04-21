@@ -14,3 +14,4 @@
     fail_msg: "repo {{ item }} is in invaild format"
     success_msg: "validate repo {{ item.name }} format success"
   with_items: "{{ docker_custom_repo }}"
+  when: docker_custom_repo | length != 0

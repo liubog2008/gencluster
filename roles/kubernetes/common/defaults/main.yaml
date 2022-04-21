@@ -1,1 +1,21 @@
 kube_version: "{{ g_kube_version }}"
+
+sysctl_args:
+- key: net.bridge.bridge-nf-call-iptables
+  value: 1
+- key: net.ipv4.ip_forward
+  value: 1
+- key: net.ipv4.ip_nonlocal_bind
+  value: 1
+- key: net.ipv4.conf.all.arp_announce
+  value: 2
+- key: net.ipv4.conf.default.arp_announce
+  value: 2
+- key: net.ipv4.conf.all.arp_ignore
+  value: 1
+- key: net.ipv4.conf.default.arp_ignore
+  value: 1
+- key: net.ipv4.conf.all.arp_filter
+  value: 1
+- key: net.ipv4.conf.default.arp_filter
+  value: 1

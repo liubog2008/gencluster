@@ -1,4 +1,4 @@
-apiVersion: kubeadm.k8s.io/v1beta2
+apiVersion: kubeadm.k8s.io/v1beta1
 kind: InitConfiguration
 localAPIEndpoint:
   advertiseAddress: {{ kube_apiserver_addr }}
@@ -10,7 +10,7 @@ nodeRegistration:
   - effect: NoSchedule
     key: node-role.kubernetes.io/master
 ---
-apiVersion: kubeadm.k8s.io/v1beta2
+apiVersion: kubeadm.k8s.io/v1beta1
 kind: ClusterConfiguration
 apiServer:
   timeoutForControlPlane: 4m0s
@@ -20,17 +20,31 @@ apiServer:
 certificatesDir: /etc/kubernetes/pki
 clusterName: kubernetes
 controlPlaneEndpoint: {{ kube_loadbalancer_ip }}:{{ kube_loadbalancer_port }}
+controllerManager: {}
 dns:
   type: CoreDNS
+etcd:
+  local:
+    serverCertSANs:
+    - "{{ kube_etcd_current_host }}"
+    peerCertSANs:
+    - "{{ kube_etcd_current_host }}"
+    extraArgs:
+      initial-cluster: {{ kube_etcd_names[0] }}=https://{{ kube_etcd_hosts[0] }}:2380,{{ kube_etcd_names[1] }}=https://{{ kube_etcd_hosts[1] }}:2380,{{ kube_etcd_names[2] }}=https://{{ kube_etcd_hosts[2] }}:2380
+      initial-cluster-state: new
+      name: {{ kube_etcd_current_name }}
+      listen-peer-urls: https://{{ kube_etcd_current_host }}:2380
+      listen-client-urls: https://{{ kube_etcd_current_host }}:2379
+      advertise-client-urls: https://{{ kube_etcd_current_host }}:2379
+      initial-advertise-peer-urls: https://{{ kube_etcd_current_host }}:2380
+    dataDir: /var/lib/etcd
 imageRepository: {{ kube_image_repo }}
 kubernetesVersion: v{{ kube_version }}
 networking:
   dnsDomain: {{ kube_dns_domain }}
   podSubnet: {{ kube_pod_cidr }}
   serviceSubnet: {{ kube_svc_cidr }}
-controllerManager: {}
 scheduler: {}
-etcd: {}
 ---
 apiVersion: kubeproxy.config.k8s.io/v1alpha1
 kind: KubeProxyConfiguration

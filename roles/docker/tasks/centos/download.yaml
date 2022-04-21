@@ -10,8 +10,6 @@
     name:
     - "docker-ce-{{ docker_version }}"
     - "docker-ce-cli-{{ docker_version }}"
-    disablerepo: "*"
-    enablerepo: "base,docker"
     state: present
     update_cache: yes
 

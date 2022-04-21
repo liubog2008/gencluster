@@ -1,15 +1,3 @@
-- name: Change sysctl config
-  sysctl:
-    name: "{{ item.key }}"
-    value: "{{ item.value }}"
-    sysctl_set: true
-    state: present
-    reload: true
-  with_items: "{{ sysctl_args }}"
-
-- name: Add kernel module ipvs
-  import_tasks: centos/kernel.yaml
-
 - name: Ensure remote config dir exists
   file:
     name: /etc/kubeadm
@@ -24,6 +12,13 @@
   template:
     src: kubeadm.yaml.j2
     dest: /etc/kubeadm/kubeadm.yaml
+  when: not kube_ha
+
+- name: Generate kubeadm config
+  template:
+    src: kubeadm-ha.yaml.j2
+    dest: /etc/kubeadm/kubeadm.yaml
+  when: kube_ha
 
 - name: Generate ca
   shell: kubeadm init phase certs all --config /etc/kubeadm/kubeadm.yaml
@@ -62,40 +57,3 @@
   - "/etc/kubernetes/pki/etcd/ca.key"
   when: inventory_hostname != ansible_play_hosts|first
 
-- name: Ensure loadbalancer config dir exists
-  file:
-    name: "{{ item }}"
-    state: directory
-  with_items:
-  - "/etc/kubernetes/manifests"
-  - "/etc/kubernetes/keepalived"
-  - "/etc/kubernetes/haproxy"
-  when: kube_ha
-
-- name: Generate haproxy config
-  template:
-    src: "haproxy.cfg.j2"
-    dest: "{{ haproxy_config_dir }}/haproxy.cfg"
-  when: kube_ha
-
-- name: Generate keepalived config
-  template:
-    src: "keepalived.conf.j2"
-    dest: "{{ keepalived_config_dir }}/keepalived.conf"
-  when: kube_ha
-
-- name: Copy keepalived script
-  copy:
-    src: "{{ item }}"
-    dest: "{{ keepalived_config_dir }}/{{ item }}"
-    mode: '0755'
-  with_items:
-  - "check_haproxy.sh"
-  - "notify.sh"
-  when: kube_ha
-
-- name: Generate loadbalancer manifest
-  template:
-    src: "loadbalancer.yaml.j2"
-    dest: "/etc/kubernetes/manifests/loadbalancer.yaml"
-  when: kube_ha
