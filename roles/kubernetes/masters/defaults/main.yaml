@@ -10,7 +10,8 @@ supported_kube_version:
 - "1.14.8"
 - "1.21.1"
 
-kube_image_repo: "registry.aliyuncs.com/google_containers"
+# kube_image_repo: "registry.aliyuncs.com/google_containers"
+kube_image_repo: "k8s.gcr.io"
 
 download_url: "{{ g_kube_centos_repo }}"
 
