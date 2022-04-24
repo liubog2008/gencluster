@@ -7,6 +7,9 @@
     reload: true
   with_items: "{{ sysctl_args }}"
 
+- name: Turn off swap
+  shell: swapoff -a
+
 - name: Disable swap
   mount:
     name: swap
