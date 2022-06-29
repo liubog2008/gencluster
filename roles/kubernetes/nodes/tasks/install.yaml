@@ -1,7 +1,6 @@
 - name: Kubeadm reset
   shell: kubeadm reset -f
 
-
 - name: Ensure remote config dir exists
   file:
     name: /etc/kubeadm

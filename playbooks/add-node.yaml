@@ -1,0 +1,32 @@
+- name: Add nodes
+  hosts: nodes
+  any_errors_fatal: true
+  tasks:
+  - name: Get node to check whether this node has joined
+    shell: "kubectl get node {{ inventory_hostname}} --ignore-not-found --kubeconfig /etc/kubernetes/admin.conf"
+    register: get_node_cmd
+    delegate_to: "{{ groups['masters'] | first }}"
+
+  - name: node info
+    debug:
+      msg: "{{ get_node_cmd.stdout }}"
+
+  - name: Exit if node has joined
+    meta: end_host
+    when: get_node_cmd.rc == 0 and get_node_cmd.stdout | length > 0
+
+  - name: init system
+    import_role:
+      name: system
+
+  - name: install docker
+    import_role:
+      name: docker
+
+  - name: install base
+    import_role:
+      name: kubernetes/common
+
+  - name: install nodes
+    import_role:
+      name: kubernetes/nodes

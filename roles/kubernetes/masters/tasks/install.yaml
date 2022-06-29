@@ -19,8 +19,13 @@
     port: "{{ kube_apiserver_port }}"
     delay: 10
 
+- name: Copy tigera-operator file
+  template:
+    src: tigera-operator.yaml.j2
+    dest: /etc/kubernetes/tigera-operator.yaml
+
 - name: Install calico operator
-  shell: kubectl --kubeconfig /etc/kubernetes/admin.conf create -f https://projectcalico.docs.tigera.io/manifests/tigera-operator.yaml
+  shell: kubectl --kubeconfig /etc/kubernetes/admin.conf create -f /etc/kubernetes/tigera-operator.yaml
 
 - name: Copy calico file
   template:
